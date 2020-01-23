@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'Post.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -11,37 +11,74 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  String _urlBase = "https://jsonplaceholder.typicode.com";
 
+  Future<List<Post>> _recuperarPostagens() async{
+    List<Post> postagens = List();
 
-  Future<Map> _recuperarPreco() async{
-    String _urlRequisicao = "https://blockchain.info/ticker";
-    http.Response response = await http.get(_urlRequisicao);
-    return jsonDecode(response.body);
+    http.Response response = await http.get("$_urlBase/posts");
+    var jsonPosts = jsonDecode(response.body);
+    Post post = null;
+    
+    for(var item in jsonPosts){
+      post = Post(
+        item["userId"],
+        item["id"],
+        item["title"],
+        item["body"]
+      );
+      
+      postagens.add(post);
+    }
+
+    return postagens;
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map>(
-      future: _recuperarPreco(),
-      builder: (context, snapshot){
-        String _resultado;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Carregando ListView via API"),
+        backgroundColor: Colors.red,
+      ),
+      body: FutureBuilder<List<Post>>(
+        future: _recuperarPostagens(),
+        builder: (context, snapshot){
+          String _resultado;
 
-        if(snapshot.hasError){
-          _resultado = "Erro ao carregar os dados";
-        }
+          if(snapshot.hasError){
+            _resultado = "Erro ao carregar os dados";
+          }
+          else{
+            if(snapshot.connectionState == ConnectionState.waiting){
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-        if(snapshot.connectionState == ConnectionState.waiting){
-          _resultado = "Carregando...";
-        }
+            if(snapshot.connectionState == ConnectionState.done){
+              return ListView.builder(
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (context, index){
+                    List<Post> postagens = snapshot.data;
+                    Post post = postagens[index];
 
-        if(snapshot.connectionState == ConnectionState.done){
-          _resultado = snapshot.data["BRL"]["buy"].toString();
-        }
+                    return ListTile(
+                      title: Text(post.title),
+                      subtitle: Text(post.body),
+                    );
+                  }
+              );
 
-        return Center(
-          child: Text(_resultado),
-        );
-    },
+
+            }
+          }
+          return Center(
+            child: Text(_resultado),
+          );
+        },
+      ),
     );
   }
 }
