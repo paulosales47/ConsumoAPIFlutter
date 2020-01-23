@@ -51,10 +51,38 @@ class _HomeState extends State<Home> {
   }
 
   void _atualizarPost() async{
-    
+
+    http.Response response = await http.put("$_urlBase/posts/2",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }, body: json.encode({
+          "userId": 120,
+          "id": null,
+          "title": "Titulo alterado",
+          "body": "Corpo da postagem alterado"
+        }));
+
+      print(response.statusCode);
   }
 
-  void _removerPost(){}
+  void _atualizarPostPath() async{
+
+    http.Response response = await http.patch("$_urlBase/posts/2",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }, body: json.encode({
+            "body": "Corpo da postagem alterado"
+        }));
+
+    print(response.statusCode);
+  }
+
+  void _removerPost() async{
+
+    http.Response response = await http.delete("$_urlBase/posts/2");
+
+    print(response.statusCode);
+  }
 
   @override
   Widget build(BuildContext context) {
