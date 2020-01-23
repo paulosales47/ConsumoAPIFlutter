@@ -35,6 +35,27 @@ class _HomeState extends State<Home> {
 
   }
 
+  void _criarPost() async{
+    
+    http.Response response = await http.post("$_urlBase/posts",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }, body: json.encode({
+          "userId": 120,
+          "id": null,
+          "title": "Titulo",
+          "body": "Corpo da postagem"
+        }));
+
+    print(response.statusCode);
+  }
+
+  void _atualizarPost() async{
+    
+  }
+
+  void _removerPost(){}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,43 +63,65 @@ class _HomeState extends State<Home> {
         title: Text("Carregando ListView via API"),
         backgroundColor: Colors.red,
       ),
-      body: FutureBuilder<List<Post>>(
-        future: _recuperarPostagens(),
-        builder: (context, snapshot){
-          String _resultado;
+      body: Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              RaisedButton(
+                child: Text("Salvar"),
+                onPressed: _criarPost,
+              ),
+              RaisedButton(
+                child: Text("Atualizar"),
+                onPressed: _atualizarPost,
+              ),
+              RaisedButton(
+                child: Text("Remover"),
+                onPressed: _removerPost,
+              ),
+            ],
+          ),
+          Expanded(
+            child: FutureBuilder<List<Post>>(
+              future: _recuperarPostagens(),
+              builder: (context, snapshot){
+                String _resultado;
 
-          if(snapshot.hasError){
-            _resultado = "Erro ao carregar os dados";
-          }
-          else{
-            if(snapshot.connectionState == ConnectionState.waiting){
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if(snapshot.connectionState == ConnectionState.done){
-              return ListView.builder(
-                  itemCount: snapshot.data.length,
-                  itemBuilder: (context, index){
-                    List<Post> postagens = snapshot.data;
-                    Post post = postagens[index];
-
-                    return ListTile(
-                      title: Text(post.title),
-                      subtitle: Text(post.body),
+                if(snapshot.hasError){
+                  _resultado = "Erro ao carregar os dados";
+                }
+                else{
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return Center(
+                      child: CircularProgressIndicator(),
                     );
                   }
-              );
+
+                  if(snapshot.connectionState == ConnectionState.done){
+                    return ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, index){
+                          List<Post> postagens = snapshot.data;
+                          Post post = postagens[index];
+
+                          return ListTile(
+                            title: Text(post.title),
+                            subtitle: Text(post.body),
+                          );
+                        }
+                    );
 
 
-            }
-          }
-          return Center(
-            child: Text(_resultado),
-          );
-        },
-      ),
+                  }
+                }
+                return Center(
+                  child: Text(_resultado),
+                );
+              },
+            ),
+          )
+        ],
+      )
     );
   }
 }
